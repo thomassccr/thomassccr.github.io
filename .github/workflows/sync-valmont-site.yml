@@ -1,0 +1,74 @@
+name: Sync site vitrine Valmont
+
+# Recopie automatiquement le site vitrine (dossier `site/` du repo Valmont)
+# vers `valmont-site/` ici, pour que le lien Instagram (thomassccr.github.io)
+# reflète toujours la dernière version du site — sans interception PWA.
+#
+# Déclencheurs :
+#   - schedule    : vérifie toutes les 10 min (rattrapage automatique)
+#   - workflow_dispatch : bouton « Run workflow » manuel
+#   - repository_dispatch (type: sync-site) : déclenchement instantané
+#     depuis le repo Valmont (voir workflow "Notifier le site vitrine")
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [sync-site]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-valmont-site
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (ce repo)
+        uses: actions/checkout@v4
+
+      - name: Récupère le site vitrine depuis le repo Valmont
+        run: |
+          set -euo pipefail
+          SRC="${RUNNER_TEMP}/valmont"
+          git clone --depth 1 https://github.com/thomassccr/Valmont.git "$SRC"
+
+          # Reconstruit valmont-site/ à l'identique du dossier site/
+          rm -rf valmont-site
+          mkdir -p valmont-site
+          cp -r "$SRC/site/." valmont-site/
+
+          # Les pages du site référencent les icônes à la racine du repo Valmont
+          # (../icon-192.png). On copie ces icônes en local et on corrige les chemins.
+          cp "$SRC/icon-192.png" valmont-site/ 2>/dev/null || true
+          cp "$SRC/icon-512.png" valmont-site/ 2>/dev/null || true
+
+          # Adapte les chemins relatifs "../" (valables dans /Valmont/site/) pour
+          # une page hébergée à /valmont-site/ : icônes en local, accès web -> URL absolue.
+          for f in valmont-site/*.html; do
+            [ -f "$f" ] || continue
+            sed -i \
+              -e 's|src="../icon-512.png"|src="icon-512.png"|g' \
+              -e 's|src="../icon-192.png"|src="icon-192.png"|g' \
+              -e 's|href="../icon-192.png"|href="icon-192.png"|g' \
+              -e 's|href="../?web=1"|href="https://thomassccr.github.io/Valmont/?web=1"|g' \
+              "$f"
+          done
+
+      - name: Commit si le site a changé
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add valmont-site
+          if git diff --cached --quiet; then
+            echo "Aucun changement — le site vitrine est déjà à jour."
+          else
+            git commit -m "Sync auto du site vitrine depuis le repo Valmont"
+            git push
+            echo "Site vitrine mis à jour."
+          fi
