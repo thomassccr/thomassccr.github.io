@@ -109,6 +109,36 @@
     .feat-txt, .feat.alt .feat-txt { width:auto; text-align:center; }
   }
 
+  /* ── Témoignages ── */
+  .reviews { position:relative; z-index:1; max-width:1160px; margin:0 auto; padding:10px 20px 80px; }
+  .reviews h2 { text-align:center; font-size:26px; font-weight:700; color:#fff; letter-spacing:-.01em; margin-bottom:8px; }
+  .reviews .sub2 { text-align:center; font-size:14px; color:#8a8680; margin-bottom:36px; }
+  /* Carrousel infini : les cartes défilent en continu (dupliquées pour une boucle
+     sans couture, translateX -50% moins la moitié du gap), pause au survol */
+  .t-wrap { position:relative; overflow:hidden; }
+  .t-track { display:flex; gap:16px; width:max-content; animation:tScroll 42s linear infinite; will-change:transform; }
+  @keyframes tScroll { to { transform:translateX(calc(-50% - 8px)); } }
+  .t-fade { position:absolute; top:0; bottom:0; width:120px; z-index:2; pointer-events:none; }
+  .t-fade.l { left:0; background:linear-gradient(90deg, #050505 0%, rgba(5,5,5,0) 100%); }
+  .t-fade.r { right:0; background:linear-gradient(270deg, #050505 0%, rgba(5,5,5,0) 100%); }
+  .t-card {
+    width:360px; flex-shrink:0;
+    background:rgba(255,255,255,0.028); border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px; padding:22px 22px 18px; text-align:left;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  @media (max-width:560px) { .t-card { width:300px; } }
+  .t-stars { display:flex; gap:2px; }
+  .t-stars svg { width:13px; height:13px; fill:#f5b942; }
+  .t-stars svg.off { fill:rgba(255,255,255,0.16); }
+  .t-quote { font-size:13.5px; line-height:1.65; color:#c8c4be; flex:1; }
+  .t-who { display:flex; align-items:center; gap:11px; margin-top:2px; }
+  .t-ava { width:36px; height:36px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#2a2c31; position:relative; }
+  .t-ava img { width:100%; height:100%; object-fit:cover; display:block; }
+  .t-ava .fb { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; background:linear-gradient(135deg,#3d8ef0,#1a5fc8); }
+  .t-name { font-size:13px; font-weight:600; color:#e8e4de; line-height:1.25; }
+  .t-role { font-size:11.5px; color:#8a8680; }
+
   /* ── Installation ── */
   .install {
     position:relative; z-index:1; max-width:640px; margin:0 auto; padding:24px 20px 110px;
@@ -172,7 +202,7 @@
   .ln-notif.ln-exit { transform:translateY(-90px); opacity:0; transition:transform .52s cubic-bezier(.4,0,.6,1), opacity .42s ease; }
   .ln-app-icon { width:40px; height:40px; border-radius:10px; flex-shrink:0; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.45); }
   .ln-app-icon svg { display:block; width:100%; height:100%; }
-  .ln-content { flex:1; min-width:0; }
+  .ln-content { flex:1; min-width:0; text-align:left; }
   .ln-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
   .ln-app-name { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:10.5px; font-weight:500; color:rgba(235,235,240,0.48); letter-spacing:.025em; text-transform:uppercase; }
   .ln-time { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:11px; color:rgba(235,235,240,0.35); letter-spacing:-.01em; flex-shrink:0; }
@@ -297,18 +327,93 @@
 
   </section>
   <script>
-  // Révélation au scroll : chaque section apparaît en décalé quand elle entre à l'écran
-  (function(){
-    var feats = document.querySelectorAll('.feat');
-    if (!('IntersectionObserver' in window)) { feats.forEach(function(f){ f.classList.add('in'); }); return; }
+  // Révélation au scroll des sections + duplication des témoignages pour la boucle infinie.
+  document.addEventListener('DOMContentLoaded', function(){
+    // Carrousel : on duplique les cartes une fois (boucle sans couture à -50%)
+    var track = document.getElementById('t-track');
+    if (track) {
+      var clone = track.cloneNode(true);
+      clone.querySelectorAll('.t-card').forEach(function(c){ c.setAttribute('aria-hidden','true'); });
+      while (clone.firstChild) track.appendChild(clone.firstChild);
+    }
+    // Révélation au scroll des grandes sections
+    var els = document.querySelectorAll('.feat');
+    if (!('IntersectionObserver' in window)) { els.forEach(function(f){ f.classList.add('in'); }); return; }
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
       });
-    }, { threshold: 0.18 });
-    feats.forEach(function(f){ io.observe(f); });
-  })();
+    }, { threshold: 0.15 });
+    els.forEach(function(f){ io.observe(f); });
+  });
   </script>
+
+  <!-- ── TÉMOIGNAGES ── -->
+  <section class="reviews">
+    <h2>Ils tradent avec Valmont</h2>
+    <div class="sub2">Des traders prop firm, futures et forex — voilà ce qu'ils en disent.</div>
+    <div class="t-wrap">
+      <div class="t-fade l"></div>
+      <div class="t-fade r"></div>
+      <div class="t-track" id="t-track">
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« Le journal que j'aurais dû avoir dès le début. L'import FTMO marche direct, et voir mon win rate par jour de la semaine m'a fait arrêter de trader le vendredi après-midi. Rien que ça, ça a payé l'effort d'installation. »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">L</div></div>
+          <div><div class="t-name">Lucas M.</div><div class="t-role">Trader funded — FTMO 100k</div></div>
+        </div>
+      </div>
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« Le coach IA m'a aidée à tenir mon plan pendant tout mon challenge. Le débrief du soir est devenu un rituel — passée du premier coup, je ne change plus rien à ma routine. »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">S</div></div>
+          <div><div class="t-name">Sarah K.</div><div class="t-role">Challenge FTMO 10k réussi</div></div>
+        </div>
+      </div>
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« Simple, sombre, rapide. Le calendrier P&L est devenu mon écran de fin de journée. Je notais tout dans Notion avant, aucune comparaison. »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/men/75.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">M</div></div>
+          <div><div class="t-name">Mehdi B.</div><div class="t-role">Futures — NQ &amp; ES</div></div>
+        </div>
+      </div>
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg class="off" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« Trois comptes prop firm synchronisés, plus besoin de mon Excel à rallonge. Il manque juste une app mobile pour la version 5 étoiles 😄 »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/men/14.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">T</div></div>
+          <div><div class="t-name">Théo R.</div><div class="t-role">Swing trader — 3 comptes</div></div>
+        </div>
+      </div>
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« J'étais sceptique sur le coach IA… en fait c'est le debrief que personne ne fait jamais. Après une grosse perte, il m'a fait écrire ce qui s'était passé au lieu de re-rentrer direct. Ça vaut cher. »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/women/68.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">C</div></div>
+          <div><div class="t-name">Camille D.</div><div class="t-role">Forex — EUR/USD</div></div>
+        </div>
+      </div>
+
+      <div class="t-card">
+        <div class="t-stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="t-quote">« Installée en deux minutes sur mon Mac, mes stats étaient là avant mon café. L'app est belle, précise, et se met à jour toute seule. Que demander de plus. »</div>
+        <div class="t-who">
+          <div class="t-ava"><img src="https://randomuser.me/api/portraits/men/52.jpg" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fb" style="display:none">A</div></div>
+          <div><div class="t-name">Alexandre P.</div><div class="t-role">Day trader — indices</div></div>
+        </div>
+      </div>
+
+      </div><!-- /t-track -->
+    </div><!-- /t-wrap -->
+  </section>
 
   <!-- ── INSTALLATION ── -->
   <section class="install" id="installer">
