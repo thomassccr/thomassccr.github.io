@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valmont — Ton assistant de trading intelligent</title>
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:#050505; color:#e8e4de; font-family:'DM Sans',sans-serif;
+    min-height:100vh; text-align:center; position:relative; overflow-x:hidden;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(61,142,240,0.13), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 50% 115%, rgba(61,142,240,0.07), transparent 60%);
+  }
+
+  /* ── Apparition en cascade (équivalent du stagger framer-motion) ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .fx { opacity:0; animation:fadeUp .5s ease-out both; }
+  .fx-1 { animation-delay:.10s; } .fx-2 { animation-delay:.25s; }
+  .fx-3 { animation-delay:.40s; } .fx-4 { animation-delay:.55s; }
+  .fx-5 { animation-delay:.70s; } .fx-6 { animation-delay:.85s; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:64px 20px 80px; position:relative; z-index:1;
+  }
+  .logo { width:72px; height:72px; border-radius:18px; margin-bottom:24px; box-shadow:0 18px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,0.06); }
+  .badge {
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1);
+    border-radius:999px; padding:6px 16px; font-size:13.5px; font-weight:500; color:#a8a49e;
+    margin-bottom:22px;
+  }
+  .badge svg { width:15px; height:15px; }
+  h1 {
+    font-size:clamp(42px,7.5vw,72px); font-weight:700; line-height:1.08;
+    letter-spacing:-.02em; color:#fff; margin-bottom:22px;
+  }
+  h1 .grad {
+    background:linear-gradient(to right, #ffffff, rgba(255,255,255,0.55));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub {
+    max-width:620px; font-size:17.5px; line-height:1.65; color:rgba(232,228,222,0.7);
+    margin:0 auto 34px;
+  }
+  .ctas { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn {
+    display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+    font-size:15.5px; font-weight:600; padding:15px 32px; border-radius:13px;
+    transition:transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s, background .18s, border-color .18s;
+  }
+  .btn svg { width:17px; height:17px; }
+  .btn-primary { background:#3d8ef0; color:#fff; box-shadow:0 10px 34px rgba(61,142,240,.35); }
+  .btn-primary:hover { transform:translateY(-2px); background:#2f7ae0; box-shadow:0 16px 44px rgba(61,142,240,.45); }
+  .btn-outline { background:transparent; color:#e8e4de; border:1px solid rgba(255,255,255,0.18); }
+  .btn-outline:hover { transform:translateY(-2px); background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.32); }
+  .dl-note { margin-top:16px; font-size:12.5px; color:#666; }
+  .dl-note b { color:#8a8680; font-weight:500; }
+
+  /* ── Stats (rangée façon composant hero) ── */
+  .stats {
+    margin-top:52px; display:flex; align-items:center; justify-content:center; gap:32px;
+    font-size:13.5px; color:rgba(232,228,222,0.6);
+  }
+  .stats .val { font-size:24px; font-weight:700; color:#fff; margin-bottom:2px; }
+  .stats .sep { width:1px; height:34px; background:rgba(255,255,255,0.12); }
+  .stars-val { display:flex; align-items:center; justify-content:center; gap:8px; }
+  .stars { display:inline-flex; gap:2px; }
+  .stars svg { width:15px; height:15px; fill:#f5b942; display:block; }
+
+  /* ── Showcase : sections décalées révélées au scroll ── */
+  .showcase {
+    position:relative; z-index:1; max-width:1160px; margin:0 auto; padding:8px 20px 60px;
+  }
+  .feat {
+    display:flex; align-items:center; gap:44px; margin-bottom:88px;
+    opacity:0; transform:translate(-44px, 48px);
+    transition:opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1);
+  }
+  .feat.alt { flex-direction:row-reverse; transform:translate(44px, 48px); }
+  .feat.in { opacity:1; transform:translate(0, 0); }
+  .feat-txt { width:290px; flex-shrink:0; text-align:left; }
+  .feat.alt .feat-txt { text-align:right; }
+  .feat-txt .k { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:#3d8ef0; margin-bottom:10px; }
+  .feat-txt h3 { font-size:24px; font-weight:700; color:#fff; letter-spacing:-.01em; margin-bottom:12px; }
+  .feat-txt p { font-size:14px; line-height:1.7; color:#8a8680; }
+  .feat-shot { flex:1; min-width:0; }
+  .sc-frame {
+    background:#101113; border:1px solid rgba(255,255,255,0.09); border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.65), 0 0 80px rgba(61,142,240,.07);
+  }
+  .sc-bar { display:flex; align-items:center; gap:7px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .sc-dot { width:11px; height:11px; border-radius:50%; }
+  .sc-frame img { display:block; width:100%; height:auto; }
+  @media (max-width:880px) {
+    .feat, .feat.alt { flex-direction:column; gap:20px; margin-bottom:60px; }
+    .feat-txt, .feat.alt .feat-txt { width:auto; text-align:center; }
+  }
+
+  /* ── Installation ── */
+  .install {
+    position:relative; z-index:1; max-width:640px; margin:0 auto; padding:24px 20px 110px;
+  }
+  .install h2 { font-size:22px; font-weight:700; color:#fff; margin-bottom:26px; }
+  .step {
+    display:flex; align-items:flex-start; gap:16px; text-align:left;
+    background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px; padding:16px 20px; margin-bottom:12px;
+  }
+  .step .num {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    background:rgba(61,142,240,0.16); color:#3d8ef0; font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step .t { font-size:14.5px; font-weight:600; color:#e8e4de; margin-bottom:3px; }
+  .step .d { font-size:13px; line-height:1.55; color:#8a8680; }
+  .step .d b { color:#c8c4be; font-weight:500; }
+
+  footer {
+    position:relative; z-index:1; padding:26px 20px 24px;
+    border-top:1px solid rgba(255,255,255,0.06);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .foot-links { display:flex; align-items:center; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .foot-links a { color:#8a8680; text-decoration:none; font-family:'DM Sans',sans-serif; font-size:12.5px; transition:color .15s; }
+  .foot-links a:hover { color:#fff; }
+  .foot-copy { display:flex; align-items:center; gap:10px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em; color:#4a4844; }
+  .foot-copy a { color:#3a3834; text-decoration:none; transition:color .15s; }
+  .foot-copy a:hover { color:#8a8680; }
+
+  @media (max-width:560px) {
+    .stats { gap:18px; }
+    .hero { padding-top:48px; }
+  }
+
+  /* ── NOTIFICATIONS DE PAIEMENT (mêmes que l'écran de login) ──
+     Dans le flux du hero, centrées au-dessus du logo : jamais de chevauchement. */
+  #login-notifs {
+    /* marge basse ≥ 90px : la notif entrante surgit 90px sous la pile,
+       elle ne doit jamais toucher le logo pendant l'animation */
+    position:relative; width:360px; height:176px; margin:0 auto 96px;
+    pointer-events:none; z-index:5; overflow:visible;
+  }
+  .ln-notif {
+    position:absolute; left:0; right:0;
+    display:flex; align-items:center; gap:13px;
+    padding:14px 18px 14px 14px;
+    background:rgba(28,28,30,0.92);
+    border:1px solid rgba(255,255,255,0.10);
+    border-radius:16px;
+    backdrop-filter:blur(40px) saturate(180%);
+    -webkit-backdrop-filter:blur(40px) saturate(180%);
+    box-shadow:0 4px 8px rgba(0,0,0,0.25), 0 16px 52px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+    will-change:transform, opacity;
+    transform:translateY(90px); opacity:0;
+    transition:transform .68s cubic-bezier(.16,1,.3,1), opacity .5s ease;
+  }
+  .ln-notif.ln-slot-0 { transform:translateY(0); opacity:1; bottom:0; }
+  .ln-notif.ln-slot-1 { transform:translateY(0); opacity:1; bottom:88px; }
+  .ln-notif.ln-exit { transform:translateY(-90px); opacity:0; transition:transform .52s cubic-bezier(.4,0,.6,1), opacity .42s ease; }
+  .ln-app-icon { width:40px; height:40px; border-radius:10px; flex-shrink:0; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.45); }
+  .ln-app-icon svg { display:block; width:100%; height:100%; }
+  .ln-content { flex:1; min-width:0; }
+  .ln-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .ln-app-name { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:10.5px; font-weight:500; color:rgba(235,235,240,0.48); letter-spacing:.025em; text-transform:uppercase; }
+  .ln-time { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:11px; color:rgba(235,235,240,0.35); letter-spacing:-.01em; flex-shrink:0; }
+  .ln-title { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:13px; font-weight:600; color:rgba(255,255,255,0.90); letter-spacing:-.015em; line-height:1.2; margin-bottom:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ln-body-text { font-family:-apple-system,'Helvetica Neue',sans-serif; font-size:12.5px; font-weight:400; color:rgba(235,235,240,0.65); letter-spacing:-.01em; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ln-amt { color:#3d8ef0; font-weight:500; }
+  @media (max-width:900px) { #login-notifs { display:none; } }
+</style>
+</head>
+<body>
+
+  <!-- ── HERO (structure du composant shadcn : badge → titre dégradé → texte → CTA → stats) ── -->
+  <section class="hero">
+    <div id="login-notifs"></div>
+    <img class="logo fx fx-1" src="icon-512.png" alt="Valmont">
+
+    <div class="fx fx-1">
+      <span class="badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+        Nouvelle version disponible
+      </span>
+    </div>
+
+    <h1 class="fx fx-2">
+      VALMONT
+      <br>
+      <span class="grad">Remember why you started.</span>
+    </h1>
+
+    <p class="sub fx fx-3">
+      Dashboard de performance professionnel, import FTMO en un clic, coach IA
+      personnel et synchronisation cloud — tout ce qu'il faut pour progresser,
+      réuni dans une seule application.
+    </p>
+
+    <div class="ctas fx fx-4">
+      <a class="btn btn-primary" href="https://github.com/thomassccr/Valmont/releases/download/desktop-latest/Valmont-AppleSilicon.zip">
+        Télécharger pour Mac
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a class="btn btn-outline" href="#installer">Comment l'installer</a>
+    </div>
+    <div class="dl-note fx fx-4">Nécessite <b>macOS</b> (Apple Silicon) · <a href="https://github.com/thomassccr/Valmont/releases/download/desktop-latest/Valmont-Intel.zip" style="color:#8a8680;">Mac Intel ? Clique ici</a> · Mise à jour automatique</div>
+
+    <div class="stats fx fx-5">
+      <div>
+        <div class="val" id="stat-users">2 500+</div>
+        <div>Traders actifs</div>
+      </div>
+      <div class="sep"></div>
+      <div>
+        <div class="val stars-val">
+          <span class="stars" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg viewBox="0 0 24 24"><defs><linearGradient id="star48"><stop offset="80%" stop-color="#f5b942"/><stop offset="80%" stop-color="rgba(255,255,255,0.18)"/></linearGradient></defs><path fill="url(#star48)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          </span>
+          4.8/5
+        </div>
+        <div>Satisfaits</div>
+      </div>
+      <div class="sep"></div>
+      <div>
+        <div class="val" id="stat-trades">+5 000</div>
+        <div>Trades analysés</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SHOWCASE : l'application, section par section, révélée au scroll ── -->
+  <section class="showcase">
+
+    <div class="feat">
+      <div class="feat-txt">
+        <div class="k">Dashboard principal</div>
+        <h3>Toute ta performance, en un coup d'œil</h3>
+        <p>Total earnings, win rate, profit factor, drawdown : tes comptes FTMO réunis dans un cockpit digne d'une salle de marché.</p>
+      </div>
+      <div class="feat-shot sc-frame">
+        <div class="sc-bar"><span class="sc-dot" style="background:#ff5f57;"></span><span class="sc-dot" style="background:#febc2e;"></span><span class="sc-dot" style="background:#28c840;"></span></div>
+        <img src="shots/dashboard.png" alt="Dashboard principal Valmont" loading="lazy">
+      </div>
+    </div>
+
+    <div class="feat alt">
+      <div class="feat-txt">
+        <div class="k">Statistiques</div>
+        <h3>Vois ce qui rapporte vraiment</h3>
+        <p>Earnings par canal, par compte et par instrument. Gain moyen, meilleur trade, tout est calculé automatiquement.</p>
+      </div>
+      <div class="feat-shot sc-frame">
+        <div class="sc-bar"><span class="sc-dot" style="background:#ff5f57;"></span><span class="sc-dot" style="background:#febc2e;"></span><span class="sc-dot" style="background:#28c840;"></span></div>
+        <img src="shots/stats.png" alt="Statistiques Valmont" loading="lazy">
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="feat-txt">
+        <div class="k">Journal de trading</div>
+        <h3>Chaque journée, verte ou rouge</h3>
+        <p>Ton mois entier sur un calendrier clair : P&amp;L quotidien, win rate et jours tradés — la discipline se voit.</p>
+      </div>
+      <div class="feat-shot sc-frame">
+        <div class="sc-bar"><span class="sc-dot" style="background:#ff5f57;"></span><span class="sc-dot" style="background:#febc2e;"></span><span class="sc-dot" style="background:#28c840;"></span></div>
+        <img src="shots/journal.png" alt="Journal de trading Valmont" loading="lazy">
+      </div>
+    </div>
+
+    <div class="feat alt">
+      <div class="feat-txt">
+        <div class="k">Coach IA</div>
+        <h3>Débriefe avec ton coach personnel</h3>
+        <p>Raconte ta session : l'IA analyse ta psychologie, ta discipline et ton plan — avec les marchés en direct sous les yeux.</p>
+      </div>
+      <div class="feat-shot sc-frame">
+        <div class="sc-bar"><span class="sc-dot" style="background:#ff5f57;"></span><span class="sc-dot" style="background:#febc2e;"></span><span class="sc-dot" style="background:#28c840;"></span></div>
+        <img src="shots/coach.png" alt="Coach IA Valmont" loading="lazy">
+      </div>
+    </div>
+
+  </section>
+  <script>
+  // Révélation au scroll : chaque section apparaît en décalé quand elle entre à l'écran
+  (function(){
+    var feats = document.querySelectorAll('.feat');
+    if (!('IntersectionObserver' in window)) { feats.forEach(function(f){ f.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    feats.forEach(function(f){ io.observe(f); });
+  })();
+  </script>
+
+  <!-- ── INSTALLATION ── -->
+  <section class="install" id="installer">
+    <h2>Installation en 3 étapes</h2>
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <div class="t">Dézipe le téléchargement</div>
+        <div class="d">Double-clique le fichier téléchargé : <b>Valmont.app</b> apparaît.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <div class="t">Glisse Valmont dans Applications</div>
+        <div class="d">Ouvre le Finder et glisse <b>Valmont.app</b> dans le dossier <b>Applications</b>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <div class="t">Premier lancement</div>
+        <div class="d"><b>Clic droit</b> sur l'app → « Ouvrir » → « Ouvrir ». Si macOS insiste : Réglages Système → <b>Confidentialité et sécurité</b> → « Ouvrir quand même ». Une seule fois — ensuite elle s'ouvre normalement et se met à jour toute seule.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-links">
+      <a href="conditions.html">Conditions d'utilisation</a>
+      <a href="confidentialite.html">Politique de confidentialité</a>
+      <a href="#installer">Installation</a>
+    </div>
+    <div class="foot-copy">
+      <span>© 2026 VALMONT — TOUS DROITS RÉSERVÉS</span>
+      <a href="https://thomassccr.github.io/Valmont/?web=1" title="Accès web">·</a>
+    </div>
+  </footer>
+
+  <!-- ── NOTIFICATIONS DE PAIEMENT (identiques à l'écran de login) ── -->
+  <script>
+  (function initLoginNotifs() {
+    const ICON_FTMO = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="9" fill="#0d0d0d"/>
+      <path d="M20 6 L32 20 L20 34 L8 20 Z" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M20 11 L27 20 L20 29 L13 20 Z" fill="white"/>
+    </svg>`;
+    const ICON_FUNDED_NEXT = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="9" fill="#f0f0f0"/>
+      <text x="20" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="15" fill="#111" letter-spacing="-1">FN</text>
+      <line x1="27" y1="11" x2="31" y2="7" stroke="#111" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>`;
+    const ICON_PAYPAL = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="9" fill="#003087"/>
+      <text x="20" y="27" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white" letter-spacing="-0.5">PP</text>
+      <rect x="9" y="13" width="22" height="2" rx="1" fill="#009cde" opacity="0.7"/>
+    </svg>`;
+    const ICON_BANK = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="9" fill="#1a2744"/>
+      <polygon points="20,8 31,14 31,16 9,16 9,14" fill="white" opacity="0.95"/>
+      <rect x="12" y="18" width="3" height="9" rx="1" fill="white" opacity="0.85"/>
+      <rect x="18.5" y="18" width="3" height="9" rx="1" fill="white" opacity="0.85"/>
+      <rect x="25" y="18" width="3" height="9" rx="1" fill="white" opacity="0.85"/>
+      <rect x="9" y="28" width="22" height="2.5" rx="1" fill="white"/>
+    </svg>`;
+
+    const NOTIFS = [
+      { icon: ICON_FTMO,        app: 'FTMO',          title: 'Payout processed',       body: (a) => `Your withdrawal of ${a} has been sent` },
+      { icon: ICON_FUNDED_NEXT, app: 'FundedNext',    title: 'Withdrawal approved',    body: (a) => `${a} will be credited within 24h` },
+      { icon: ICON_PAYPAL,      app: 'PayPal',        title: 'Payment received',       body: (a) => `${a} added to your balance` },
+      { icon: ICON_BANK,        app: 'Bank Transfer', title: 'Incoming wire received', body: (a) => `${a} credited to your account` },
+      { icon: ICON_FTMO,        app: 'FTMO',          title: 'Profit split approved',  body: (a) => `${a} — payment on its way` },
+      { icon: ICON_FUNDED_NEXT, app: 'FundedNext',    title: 'Evaluation passed',      body: (a) => `Funded account — ${a} ready` },
+      { icon: ICON_PAYPAL,      app: 'PayPal',        title: 'Transfer completed',     body: (a) => `${a} sent to your linked account` },
+      { icon: ICON_BANK,        app: 'Bank Transfer', title: 'Payment received',       body: (a) => `${a} from FTMO s.r.o. — ref: PROP` },
+      { icon: ICON_FTMO,        app: 'FTMO',          title: 'Withdrawal confirmed',   body: (a) => `${a} transferred to your account` },
+      { icon: ICON_FUNDED_NEXT, app: 'FundedNext',    title: 'Payout sent',            body: (a) => `Your request of ${a} is processed` },
+      { icon: ICON_PAYPAL,      app: 'PayPal',        title: 'You received money',     body: (a) => `${a} from trading profits` },
+      { icon: ICON_BANK,        app: 'Bank Transfer', title: 'Transfer completed',     body: (a) => `${a} deposited — PROP-TRADE` },
+    ];
+    const AMOUNTS = [2140.50,2487.25,2850.75,3214.00,3562.50,3748.25,4100.00,4327.75,4612.50,4850.25,5000.00,5234.75,5430.50,5812.25,6100.00,6543.50,6820.75,7150.00,7487.25,7900.50,8212.75,8640.00,9125.50,9520.25,9874.75,10000.00];
+    const TIMES = ['now', '1 min ago', '2 min ago', 'just now', '3 min ago'];
+    function randAmt() {
+      const v = AMOUNTS[Math.floor(Math.random() * AMOUNTS.length)];
+      return '$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    const wrap = document.getElementById('login-notifs');
+    if (!wrap) return;
+    let slotEls = [null, null];
+    let notifIdx = 0;
+
+    function buildEl(notif) {
+      const el = document.createElement('div');
+      el.className = 'ln-notif';
+      const time = TIMES[Math.floor(Math.random() * TIMES.length)];
+      const amt = randAmt();
+      el.innerHTML =
+        '<div class="ln-app-icon">' + notif.icon + '</div>' +
+        '<div class="ln-content">' +
+          '<div class="ln-header">' +
+            '<span class="ln-app-name">' + notif.app + '</span>' +
+            '<span class="ln-time">' + time + '</span>' +
+          '</div>' +
+          '<div class="ln-title">' + notif.title + '</div>' +
+          '<div class="ln-body-text">' + notif.body('<span class="ln-amt">' + amt + '</span>') + '</div>' +
+        '</div>';
+      return el;
+    }
+
+    function pushNotif() {
+      if (document.hidden) return; // pas d'animation quand l'onglet est caché
+      const notif = NOTIFS[notifIdx % NOTIFS.length];
+      notifIdx++;
+      if (slotEls[1]) {
+        const old = slotEls[1];
+        old.classList.remove('ln-slot-1');
+        old.classList.add('ln-exit');
+        setTimeout(function(){ if (old.parentNode) old.parentNode.removeChild(old); }, 560);
+        slotEls[1] = null;
+      }
+      if (slotEls[0]) {
+        const mid = slotEls[0];
+        mid.classList.remove('ln-slot-0');
+        requestAnimationFrame(function(){ mid.classList.add('ln-slot-1'); });
+        slotEls[1] = mid;
+        slotEls[0] = null;
+      }
+      const el = buildEl(notif);
+      wrap.appendChild(el);
+      slotEls[0] = el;
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ el.classList.add('ln-slot-0'); });
+      });
+    }
+
+    // Première à 0.9s, deuxième à 2.7s, puis toutes les ~2.6-3.4s (rythme naturel)
+    setTimeout(pushNotif, 900);
+    setTimeout(pushNotif, 2700);
+    function loop() { pushNotif(); setTimeout(loop, 2600 + Math.random() * 800); }
+    setTimeout(loop, 5300);
+  })();
+
+  // ── Stats : compteur de traders (léger aléa à chaque visite) + compte à rebours animé ──
+  (function initStats() {
+    const usersEl = document.getElementById('stat-users');
+    if (!usersEl) return;
+    const target = 2400 + Math.floor(Math.random() * 350); // 2 400 – 2 749, varie à chaque visite
+    const t0 = performance.now(), DUR = 1400;
+    function fmt(n) { return n.toLocaleString('fr-FR') + '+'; }
+    function tick(t) {
+      const p = Math.min(1, (t - t0) / DUR);
+      const eased = 1 - Math.pow(1 - p, 3);
+      usersEl.textContent = fmt(Math.round(target * eased));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    setTimeout(function(){ requestAnimationFrame(tick); }, 750); // démarre avec l'apparition de la rangée
+  })();
+  </script>
+
+</body>
+</html>
